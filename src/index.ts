@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import { modules } from './modules';
 import { ServerApp } from './core/serverApp';
 

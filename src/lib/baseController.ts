@@ -17,6 +17,25 @@ export interface ToolDescriptor {
   handler: () => Promise<ToolResult> | ToolResult;
 }
 
+export type ToolConfig = Omit<ToolDescriptor, 'handler'> & {
+  errorLlmMessage?: string;
+  errorLogMessage?: string;
+};
+
+const TOOL_METADATA_KEY = Symbol('tool_metadata');
+
+export function Tool(config: ToolConfig) {
+  return (target: BaseController, propertyKey: string) => {
+    const existing: Array<{ propertyKey: string; config: ToolConfig }> =
+      Reflect.getMetadata(TOOL_METADATA_KEY, target.constructor) ?? [];
+    Reflect.defineMetadata(
+      TOOL_METADATA_KEY,
+      [...existing, { propertyKey, config }],
+      target.constructor
+    );
+  };
+}
+
 export abstract class BaseController {
   protected constructor(protected readonly logger: Logger) {}
 
@@ -42,5 +61,22 @@ export abstract class BaseController {
     };
   }
 
-  abstract getTools(): ToolDescriptor[];
+  getTools(): ToolDescriptor[] {
+    const meta: Array<{ propertyKey: string; config: ToolConfig }> =
+      Reflect.getMetadata(TOOL_METADATA_KEY, this.constructor) ?? [];
+
+    return meta.map(({ propertyKey, config }) => ({
+      name: config.name,
+      title: config.title,
+      description: config.description,
+      outputSchema: config.outputSchema,
+      handler: this.wrapTool(
+        () => (this as any)[propertyKey](),
+        {
+          errorLlmMessage: config.errorLlmMessage,
+          errorLogMessage: config.errorLogMessage
+        }
+      )
+    }));
+  }
 }

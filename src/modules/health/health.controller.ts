@@ -1,7 +1,7 @@
 import { Logger } from '../../lib/logger';
 import { HealthService } from './health.service';
 import { HealthSnapshot, healthOutputSchema } from './health.schemas';
-import { BaseController, ToolDescriptor, ToolResult } from '../../lib/baseController';
+import { BaseController, Tool, ToolResult } from '../../lib/baseController';
 
 export class HealthController extends BaseController {
   constructor(
@@ -11,21 +11,14 @@ export class HealthController extends BaseController {
     super(logger);
   }
 
-  getTools(): ToolDescriptor[] {
-    return [
-      {
-        name: 'server-health',
-        title: 'Server health',
-        description: 'Returns runtime health and configuration details about the MCP server.',
-        outputSchema: healthOutputSchema,
-        handler: this.wrapTool(() => this.getHealth(), {
-          errorLogMessage: 'Failed to collect server health snapshot',
-          errorLlmMessage: 'Не удалось получить информацию о состоянии сервера.'
-        })
-      }
-    ];
-  }
-
+  @Tool({
+    name: 'server-health',
+    title: 'Server health',
+    description: 'Returns runtime health and configuration details about the MCP server.',
+    outputSchema: healthOutputSchema,
+    errorLogMessage: 'Failed to collect server health snapshot',
+    errorLlmMessage: 'Не удалось получить информацию о состоянии сервера.'
+  })
   private getHealth(): ToolResult<HealthSnapshot> {
     const snapshot = this.service.getSnapshot();
     return {

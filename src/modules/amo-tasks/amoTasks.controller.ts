@@ -1,7 +1,7 @@
 import { AmoTasksService } from './amoTasks.service';
 import { tasksListResultSchema, TasksList } from './amoTasks.schemas';
 import { Logger } from '../../lib/logger';
-import { BaseController, ToolDescriptor, ToolResult } from '../../lib/baseController';
+import { BaseController, Tool, ToolResult } from '../../lib/baseController';
 
 export class AmoTasksController extends BaseController {
   constructor(
@@ -11,21 +11,14 @@ export class AmoTasksController extends BaseController {
     super(logger);
   }
 
-  getTools(): ToolDescriptor[] {
-    return [
-      {
-        name: 'get_active_tasks',
-        title: 'Get active tasks from AmoCRM',
-        description: 'Возвращает список невыполненных задач из AmoCRM.',
-        outputSchema: tasksListResultSchema,
-        handler: this.wrapTool(() => this.getActiveTasks(), {
-          errorLogMessage: 'Failed to fetch active tasks from AmoCRM',
-          errorLlmMessage: 'Не удалось получить список задач из AmoCRM.'
-        })
-      }
-    ];
-  }
-
+  @Tool({
+    name: 'get_active_tasks',
+    title: 'Get active tasks from AmoCRM',
+    description: 'Возвращает список невыполненных задач из AmoCRM.',
+    outputSchema: tasksListResultSchema,
+    errorLogMessage: 'Failed to fetch active tasks from AmoCRM',
+    errorLlmMessage: 'Не удалось получить список задач из AmoCRM.'
+  })
   private async getActiveTasks(): Promise<ToolResult<TasksList>> {
     const tasks = await this.service.getActiveTasks();
 
