@@ -1,18 +1,23 @@
 import { EnvConfig } from '../../config/env';
-import { Logger } from '../logger';
+import { Logger } from '../../lib/logger';
 import { ConcurrencyLimiter } from './concurrencyLimiter';
-import { AmoApiClient, createAmoApiClient } from './httpClient';
+import { AmoHttpClient, AmoRequestOptions } from './httpClient';
 
-export interface AmoService extends AmoApiClient {}
+export class AmoService {
+  readonly limiter: ConcurrencyLimiter;
+  private readonly client: AmoHttpClient;
 
-export const createAmoService = (
-  env: EnvConfig,
-  logger: Logger
-): AmoService => {
-  const limiter = new ConcurrencyLimiter(env.AMO_MAX_CONCURRENCY);
-  logger.debug(
-    `AmoCRM concurrency limiter initialized with max ${limiter.limit}`
-  );
+  constructor(private readonly env: EnvConfig, private readonly logger: Logger) {
+    this.limiter = new ConcurrencyLimiter(env.AMO_MAX_CONCURRENCY);
+    this.logger.debug(
+      `AmoCRM concurrency limiter initialized with max ${this.limiter.limit}`
+    );
+    this.client = new AmoHttpClient(env, this.limiter, logger);
+  }
 
-  return createAmoApiClient(env, limiter, logger);
-};
+  request<T = unknown>(options: AmoRequestOptions): Promise<T> {
+    return this.client.request<T>(options);
+  }
+}
+
+export type { AmoRequestOptions } from './httpClient';

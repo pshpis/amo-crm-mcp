@@ -1,48 +1,24 @@
-import { tasksResponseSchema, fetchActiveTasks } from './amoTasks.service';
-import { ServerModule } from '../../core/module';
+import { BaseModule } from '../../lib/baseModule';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp';
+import { AmoServerContext } from '../../core/context';
+import { AmoTasksService } from './amoTasks.service';
+import { AmoTasksController } from './amoTasks.controller';
 
-export const amoTasksModule: ServerModule = {
-  name: 'amo-tasks',
-  register: (server, context) => {
-    server.registerTool(
-      'get_active_tasks',
-      {
-        title: 'Get active tasks from AmoCRM',
-        description: 'Возвращает список невыполненных задач из AmoCRM.',
-        outputSchema: tasksResponseSchema
-      },
-      async () => {
-        try {
-          const parsed = await fetchActiveTasks(context.amo);
-          const tasks = parsed._embedded.tasks;
-
-          const summary =
-            tasks.length === 0
-              ? 'Активных задач нет.'
-              : `Найдено активных задач: ${tasks.length}.`;
-
-          return {
-            structuredContent: parsed as unknown as Record<string, unknown>,
-            content: [
-              {
-                type: 'text',
-                text: summary
-              }
-            ]
-          };
-        } catch (error) {
-          context.logger.error('Failed to fetch active tasks from AmoCRM', error);
-          return {
-            isError: true,
-            content: [
-              {
-                type: 'text',
-                text: 'Не удалось получить список задач из AmoCRM.'
-              }
-            ]
-          };
-        }
-      }
-    );
+export class AmoTasksModule extends BaseModule<AmoServerContext> {
+  constructor() {
+    super('amo-tasks');
   }
-};
+
+  register = (server: McpServer, context: AmoServerContext) => {
+    const service = context.services.getOrCreate(
+      AmoTasksService,
+      () => new AmoTasksService(context.amo)
+    );
+    const controller = context.controllers.getOrCreate(
+      AmoTasksController,
+      () => new AmoTasksController(service, context.logger)
+    );
+
+    this.registerTools(server, controller);
+  };
+}

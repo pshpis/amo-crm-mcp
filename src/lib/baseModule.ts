@@ -1,0 +1,31 @@
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp';
+
+import { BaseServerContext } from './baseContext';
+import { ToolDescriptor } from './baseController';
+
+export interface ServerModule<TContext extends BaseServerContext = BaseServerContext> {
+  name: string;
+  register: (server: McpServer, context: TContext) => void;
+}
+
+export abstract class BaseModule<TContext extends BaseServerContext = BaseServerContext>
+  implements ServerModule<TContext>
+{
+  constructor(public readonly name: string) {}
+
+  protected registerTools(server: McpServer, controller: { getTools: () => ToolDescriptor[] }) {
+    controller.getTools().forEach((tool) => {
+      server.registerTool(
+        tool.name,
+        {
+          title: tool.title,
+          description: tool.description,
+          outputSchema: tool.outputSchema
+        },
+        tool.handler
+      );
+    });
+  }
+
+  abstract register(server: McpServer, context: TContext): void;
+}

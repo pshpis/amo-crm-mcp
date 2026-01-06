@@ -1,6 +1,6 @@
 # amo-crm-mcp
 
-Модульный MCP сервер на TypeScript на базе `@modelcontextprotocol/sdk`. Базовая сборка использует stdio-транспорт и предоставляет метод `server-health` для получения информации о состоянии сервера.
+Модульный MCP сервер на TypeScript на базе `@modelcontextprotocol/sdk`. Базовая сборка использует stdio-транспорт и предоставляет инструменты `server-health` и `get_active_tasks` (AmoCRM).
 
 ## Требования
 - Node.js 18+
@@ -8,13 +8,13 @@
 ## Установка и запуск
 ```bash
 npm install
-npm run dev   # запуск через tsx
-# либо
+npm run dev          # запуск через tsx
 npm run build
-npm start     # запускает собранный dist/server.js
+npm start            # запускает собранный dist/index.js
+npm run inspector    # сборка + запуск инспектора stdio на dist/index.js
 ```
 
-Дополнительно: `LOG_LEVEL=debug npm run dev` для детальных логов.
+Дополнительно: `LOG_LEVEL=debug npm run dev` для детальных логов (stderr).
 
 ## Переменные окружения
 - Скопируйте `.env.example` в `.env` и заполните значения для AmoCRM (base URL `/api/v4/`, integration id/secret/key).
@@ -22,11 +22,13 @@ npm start     # запускает собранный dist/server.js
 - `AMO_MAX_CONCURRENCY` — максимальное число параллельных запросов к AmoCRM (по умолчанию 5). См. `src/core/amo/`.
 
 ## Архитектура
-- `src/server.ts` — точка входа, инициализация контекста, сервер MCP и модули.
+- `src/index.ts` — точка входа, инициализация `ServerApp`.
 - `src/config/` — конфигурация сервера (`name`, `version`, `description`) из `package.json` и типизированные переменные окружения из `.env`.
-- `src/core/` — общие компоненты: логгер, контекст (время старта, uptime), фабрика сервера с подключением транспорта, AmoCRM сервис с лимитом параллельности.
-- `src/modules/` — независимые модули. Каждый реализует `ServerModule` и регистрирует свои инструменты/ресурсы/промпты.
-- `src/modules/health/` — пример модуля, регистрирует MCP-инструмент `server-health`.
+- `src/core/` — Amo-специфичные классы (контекст, AmoService) поверх базовых.
+- `src/lib/` — базовая инфраструктура (логгер, `BaseServerContext`, `BaseServerApp`, `BaseModule`, `BaseController`, `SingletonStorage`) для переиспользования в других MCP серверах.
+- `src/modules/` — независимые модули. Каждый реализует `BaseModule` и регистрирует свои инструменты/ресурсы/промпты.
+- `src/modules/health/` — инструмент `server-health`.
+- `src/modules/amo-tasks/` — инструмент `get_active_tasks` (список активных задач из AmoCRM).
 
 ## Инструмент `server-health`
 - Имя: `server-health`
@@ -34,6 +36,6 @@ npm start     # запускает собранный dist/server.js
 - Результат: `structuredContent` с подробным JSON + текстовое резюме в `content`.
 
 ## Добавление новых модулей
-1. Создать папку в `src/modules/<module-name>/` и экспортировать `ServerModule` c методом `register`.
+1. Создать папку в `src/modules/<module>/`, описать схемы (`schemas`), сервис (бизнес-логика), контроллер (описание инструментов через `getTools`) и модуль (`BaseModule`).
 2. Зарегистрировать модуль в `src/modules/index.ts`.
-3. Опционально добавить схемы ввода/вывода через `zod` и использовать `server.registerTool`, `registerResource` или `registerPrompt`.
+3. В контроллере использовать `wrapTool` для унифицированной обработки ошибок, `registerTools` модуля — для регистрации всех инструментов.

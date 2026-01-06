@@ -1,31 +1,18 @@
 import { EnvConfig } from '../config/env';
-import { ServerConfig } from '../config/serverConfig';
 import { AmoService } from './amo';
-import { Logger } from './logger';
+import { Logger } from '../lib/logger';
+import { SingletonStorage } from '../lib/singletonStorage';
+import { BaseServerContext } from '../lib/baseContext';
 
-export interface ServerContext {
-  config: ServerConfig;
-  env: EnvConfig;
-  amo: AmoService;
-  logger: Logger;
-  startedAt: Date;
-  getUptimeSeconds: () => number;
+export class AmoServerContext extends BaseServerContext<EnvConfig> {
+  constructor(
+    config: BaseServerContext<EnvConfig>['config'],
+    env: EnvConfig,
+    public readonly amo: AmoService,
+    services: SingletonStorage,
+    controllers: SingletonStorage,
+    logger: Logger
+  ) {
+    super(config, env, services, controllers, logger);
+  }
 }
-
-export const createServerContext = (
-  config: ServerConfig,
-  env: EnvConfig,
-  amo: AmoService,
-  logger: Logger
-): ServerContext => {
-  const startedAt = new Date();
-
-  return {
-    config,
-    env,
-    amo,
-    logger,
-    startedAt,
-    getUptimeSeconds: () => (Date.now() - startedAt.getTime()) / 1000
-  };
-};

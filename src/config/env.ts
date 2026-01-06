@@ -1,8 +1,16 @@
 import { config as loadEnvFile } from 'dotenv';
 import { z } from 'zod';
 
-// Load environment variables from .env into process.env
+// Silence dotenv noisy banner to avoid breaking stdio transports
+const originalLog = console.log;
+const originalWarn = console.warn;
+console.log = () => {};
+console.warn = () => {};
 loadEnvFile();
+console.log = originalLog;
+console.warn = originalWarn;
+
+// Load environment variables from .env into process.env
 
 const envSchema = z.object({
   LOG_LEVEL: z.string().optional(),

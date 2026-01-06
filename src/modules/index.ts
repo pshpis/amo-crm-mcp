@@ -1,5 +1,9 @@
-import { ServerModule } from '../core/module';
-import { healthModule } from './health/health.module';
-import { amoTasksModule } from './amo-tasks/amoTasks.module';
+import { ServerModule } from '../lib/baseModule';
+import { AmoServerContext } from '../core/context';
+import { HealthModule } from './health/health.module';
+import { AmoTasksModule } from './amo-tasks/amoTasks.module';
 
-export const modules: ServerModule[] = [healthModule, amoTasksModule];
+export const modules: ServerModule<AmoServerContext>[] = [
+  new HealthModule(),
+  new AmoTasksModule()
+];

@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
 import { EnvConfig } from '../../config/env';
-import { Logger } from '../logger';
+import { Logger } from '../../lib/logger';
 import { ConcurrencyLimiter } from './concurrencyLimiter';
 
 export interface AmoRequestOptions {
@@ -18,32 +18,39 @@ export interface AmoApiClient {
   request<T = unknown>(options: AmoRequestOptions): Promise<T>;
 }
 
-export const createAmoApiClient = (
-  env: EnvConfig,
-  limiter: ConcurrencyLimiter,
-  logger: Logger
-): AmoApiClient => {
-  const baseUrl = env.AMO_BASE_URL;
+export class AmoHttpClient implements AmoApiClient {
+  public readonly limiter: ConcurrencyLimiter;
+  private readonly baseUrl?: string;
+  private readonly logger: Logger;
+  private readonly env: EnvConfig;
 
-  const request = async <T>(options: AmoRequestOptions): Promise<T> => {
-    if (!baseUrl) {
+  constructor(env: EnvConfig, limiter: ConcurrencyLimiter, logger: Logger) {
+    this.limiter = limiter;
+    this.baseUrl = env.AMO_BASE_URL;
+    this.logger = logger;
+    this.env = env;
+  }
+
+  async request<T = unknown>(options: AmoRequestOptions): Promise<T> {
+    if (!this.baseUrl) {
       throw new Error('AMO_BASE_URL is not configured');
     }
 
-    return limiter.run(async () => {
+    return this.limiter.run(async () => {
       const headers: Record<string, string> = {
         Accept: 'application/json',
         ...(options.headers ?? {})
       };
 
-      const token = options.accessTokenOverride ?? env.AMO_INTEGRATION_KEY;
+      const token =
+        options.accessTokenOverride ?? this.env.AMO_INTEGRATION_KEY;
       if (token) {
         headers.Authorization = `Bearer ${token}`;
       }
 
       const method = options.method ?? (options.body ? 'POST' : 'GET');
       const axiosConfig: AxiosRequestConfig = {
-        baseURL: baseUrl,
+        baseURL: this.baseUrl,
         url: options.path,
         method,
         headers,
@@ -56,10 +63,10 @@ export const createAmoApiClient = (
         return response.data;
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
-          logger.warn('AmoCRM request failed', {
+          this.logger.warn('AmoCRM request failed', {
             status: error.response?.status,
             statusText: error.response?.statusText,
-            url: `${baseUrl}${options.path}`,
+            url: `${this.baseUrl}${options.path}`,
             body: error.response?.data ?? error.message
           });
           const status = error.response?.status ?? 'unknown';
@@ -71,10 +78,5 @@ export const createAmoApiClient = (
         throw error;
       }
     });
-  };
-
-  return {
-    limiter,
-    request
-  };
-};
+  }
+}
