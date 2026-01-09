@@ -1,4 +1,4 @@
-import { EnvConfig } from '../config/env';
+import { EnvConfig } from './env';
 import { AmoService } from './amo';
 import { Logger } from '../lib/logger/index';
 import { SingletonStorage } from '../lib/singletonStorage';

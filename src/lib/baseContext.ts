@@ -1,4 +1,4 @@
-import { ServerConfig } from '../config/serverConfig';
+import { ServerConfig } from './serverConfig';
 import { Logger } from './logger';
 import { SingletonStorage } from './singletonStorage';
 

@@ -1,7 +1,7 @@
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport';
 
-import { loadEnvConfig } from '../config/env';
-import { loadServerConfig } from '../config/serverConfig';
+import { loadEnvConfig } from './env';
+import { loadServerConfig } from '../lib/serverConfig';
 import { AmoService } from './amo';
 import { FileLogger } from '../lib/logger/index';
 import { SingletonStorage } from '../lib/singletonStorage';

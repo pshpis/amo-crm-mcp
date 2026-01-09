@@ -1,4 +1,4 @@
-import { EnvConfig } from '../../config/env';
+import { EnvConfig } from '../env';
 import { Logger } from '../../lib/logger/index';
 import { ConcurrencyLimiter } from './concurrencyLimiter';
 import { AmoHttpClient, AmoRequestOptions } from './httpClient';
