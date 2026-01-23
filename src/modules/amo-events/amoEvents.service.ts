@@ -1,9 +1,5 @@
 import { AmoService } from '../../core/amo';
-import {
-  Event,
-  GetEventsInput,
-  eventsListResponseSchema
-} from './amoEvents.schemas';
+import { Event, GetEventsInput, eventsListResponseSchema } from './amoEvents.schemas';
 import { Logger } from '../../lib/logger';
 
 export class AmoEventsService {
@@ -41,7 +37,7 @@ export class AmoEventsService {
 
     const data = await this.amoService.request({
       path: '/events',
-      query: params
+      query: params,
     });
 
     // AmoCRM returns 204 No Content (empty response) when there are no results

@@ -35,11 +35,10 @@ export class AmoHttpClient implements AmoApiClient {
     return this.limiter.run(async () => {
       const headers: Record<string, string> = {
         Accept: 'application/json',
-        ...(options.headers ?? {})
+        ...(options.headers ?? {}),
       };
 
-      const token =
-        options.accessTokenOverride ?? this.env.AMO_INTEGRATION_KEY;
+      const token = options.accessTokenOverride ?? this.env.AMO_INTEGRATION_KEY;
       if (token) {
         headers.Authorization = `Bearer ${token}`;
       }
@@ -51,7 +50,7 @@ export class AmoHttpClient implements AmoApiClient {
         method,
         headers,
         params: options.query,
-        data: options.body
+        data: options.body,
       };
 
       try {
@@ -59,17 +58,16 @@ export class AmoHttpClient implements AmoApiClient {
         return response.data;
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
+          const errorBody: unknown = error.response?.data ?? error.message;
           this.logger.warn('AmoCRM request failed', {
             status: error.response?.status,
             statusText: error.response?.statusText,
             url: `${this.baseUrl}${options.path}`,
-            body: error.response?.data ?? error.message
+            body: errorBody,
           });
           const status = error.response?.status ?? 'unknown';
           const statusText = error.response?.statusText ?? 'unknown';
-          throw new Error(
-            `AmoCRM request failed with ${status}: ${statusText}`
-          );
+          throw new Error(`AmoCRM request failed with ${status}: ${statusText}`);
         }
         throw error;
       }

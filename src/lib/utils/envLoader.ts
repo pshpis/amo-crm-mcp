@@ -33,7 +33,7 @@ export function parseEnv<T extends ZodSchema>(schema: T): z.infer<T> {
  */
 export const baseEnvSchema = z.object({
   LOG_LEVEL: z.string().optional(),
-  LOG_FILE_PATH: z.string().optional()
+  LOG_FILE_PATH: z.string().optional(),
 });
 
 export type BaseEnv = z.infer<typeof baseEnvSchema>;

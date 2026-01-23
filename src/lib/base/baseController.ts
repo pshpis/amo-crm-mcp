@@ -27,7 +27,9 @@ const TOOL_METADATA_KEY = Symbol('tool_metadata');
 export function Tool(config: ToolConfig) {
   return (target: BaseController, propertyKey: string) => {
     const existing: Array<{ propertyKey: string; config: ToolConfig }> =
-      Reflect.getMetadata(TOOL_METADATA_KEY, target.constructor) ?? [];
+      (Reflect.getMetadata(TOOL_METADATA_KEY, target.constructor) as
+        | Array<{ propertyKey: string; config: ToolConfig }>
+        | undefined) ?? [];
     Reflect.defineMetadata(
       TOOL_METADATA_KEY,
       [...existing, { propertyKey, config }],
@@ -53,9 +55,9 @@ export abstract class BaseController {
           content: [
             {
               type: 'text',
-              text: options?.errorLlmMessage ?? 'An error occurred while executing the tool.'
-            }
-          ]
+              text: options?.errorLlmMessage ?? 'An error occurred while executing the tool.',
+            },
+          ],
         };
       }
     };
@@ -63,7 +65,9 @@ export abstract class BaseController {
 
   getTools(): ToolDescriptor[] {
     const meta: Array<{ propertyKey: string; config: ToolConfig }> =
-      Reflect.getMetadata(TOOL_METADATA_KEY, this.constructor) ?? [];
+      (Reflect.getMetadata(TOOL_METADATA_KEY, this.constructor) as
+        | Array<{ propertyKey: string; config: ToolConfig }>
+        | undefined) ?? [];
 
     return meta.map(({ propertyKey, config }) => ({
       name: config.name,
@@ -72,12 +76,17 @@ export abstract class BaseController {
       inputSchema: config.inputSchema,
       outputSchema: config.outputSchema,
       handler: this.wrapTool(
-        (input?: unknown) => (this as any)[propertyKey](input),
+        (input?: unknown) => {
+          const method = (
+            this as unknown as Record<string, (input?: unknown) => Promise<ToolResult> | ToolResult>
+          )[propertyKey];
+          return method.call(this, input);
+        },
         {
           errorLlmMessage: config.errorLlmMessage,
-          errorLogMessage: config.errorLogMessage
+          errorLogMessage: config.errorLogMessage,
         }
-      )
+      ),
     }));
   }
 }

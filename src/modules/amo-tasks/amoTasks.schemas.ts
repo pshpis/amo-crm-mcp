@@ -12,46 +12,48 @@ export const taskSchema = z.object({
   complete_till: z.number().optional(),
   is_completed: z.boolean().optional(),
   task_type_id: z.number().optional(),
-  duration: z.number().optional()
+  duration: z.number().optional(),
 });
 
 export const amoTasksApiResponseSchema = z.object({
   _embedded: z.object({
-    tasks: z.array(taskSchema)
-  })
+    tasks: z.array(taskSchema),
+  }),
 });
 
 export const singleTaskApiResponseSchema = z.object({
   _embedded: z.object({
-    tasks: z.array(taskSchema).min(1)
-  })
+    tasks: z.array(taskSchema).min(1),
+  }),
 });
 
 // Schema for POST/PATCH responses - AmoCRM returns minimal data
-export const taskMinimalSchema = z.object({
-  id: z.number()
-}).passthrough(); // Allow additional fields but only require id
+export const taskMinimalSchema = z
+  .object({
+    id: z.number(),
+  })
+  .passthrough(); // Allow additional fields but only require id
 
 export const singleTaskMinimalApiResponseSchema = z.object({
   _embedded: z.object({
-    tasks: z.array(taskMinimalSchema).min(1)
-  })
+    tasks: z.array(taskMinimalSchema).min(1),
+  }),
 });
 
 export type TaskMinimal = z.infer<typeof taskMinimalSchema>;
 
 export const tasksListSchema = z.array(taskSchema);
 export const tasksListResultSchema = z.object({
-  tasks: tasksListSchema
+  tasks: tasksListSchema,
 });
 
 // Input schemas
 export const getTaskByIdInputSchema = z.object({
-  id: z.number().int().positive()
+  id: z.number().int().positive(),
 });
 
 export const getTasksByLeadIdInputSchema = z.object({
-  lead_id: z.number().int().positive()
+  lead_id: z.number().int().positive(),
 });
 
 export const createTaskInputSchema = z.object({
@@ -61,7 +63,7 @@ export const createTaskInputSchema = z.object({
   entity_id: z.number().int().positive().optional(),
   entity_type: z.enum(['leads', 'contacts', 'companies', 'customers']).optional(),
   task_type_id: z.number().int().positive().optional(),
-  duration: z.number().int().nonnegative().optional()
+  duration: z.number().int().nonnegative().optional(),
 });
 
 export const updateTaskInputSchema = z.object({
@@ -72,32 +74,32 @@ export const updateTaskInputSchema = z.object({
   entity_id: z.number().int().positive().optional(),
   entity_type: z.enum(['leads', 'contacts', 'companies', 'customers']).optional(),
   task_type_id: z.number().int().positive().optional(),
-  duration: z.number().int().nonnegative().optional()
+  duration: z.number().int().nonnegative().optional(),
 });
 
 export const completeTaskInputSchema = z.object({
-  id: z.number().int().positive()
+  id: z.number().int().positive(),
 });
 
 // Output schemas
 export const singleTaskResultSchema = z.object({
-  task: taskSchema
+  task: taskSchema,
 });
 
 export const tasksByLeadResultSchema = z.object({
-  tasks: tasksListSchema
+  tasks: tasksListSchema,
 });
 
 export const createTaskResultSchema = z.object({
-  task: taskMinimalSchema
+  task: taskMinimalSchema,
 });
 
 export const updateTaskResultSchema = z.object({
-  task: taskMinimalSchema
+  task: taskMinimalSchema,
 });
 
 export const completeTaskResultSchema = z.object({
-  task: taskMinimalSchema
+  task: taskMinimalSchema,
 });
 
 // Types

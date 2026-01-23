@@ -17,8 +17,8 @@ const envSchema = z.object({
     .default('Europe/Moscow')
     .refine(isValidTimezone, { message: 'Invalid IANA timezone' })
     .describe('IANA timezone for date formatting (e.g., Europe/Moscow)'),
-  AMO_MAX_CONCURRENCY: z
-    .coerce.number()
+  AMO_MAX_CONCURRENCY: z.coerce
+    .number()
     .int()
     .positive()
     .default(5)
@@ -33,9 +33,7 @@ const envSchema = z.object({
     .describe('Base URL of the AmoCRM API (e.g., https://example.amocrm.ru/api/v4/)'),
   AMO_INTEGRATION_ID: z.string().optional(),
   AMO_INTEGRATION_SECRET: z.string().optional(),
-  AMO_INTEGRATION_KEY: z
-    .string()
-    .describe('Access token for AmoCRM API authentication')
+  AMO_INTEGRATION_KEY: z.string().describe('Access token for AmoCRM API authentication'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

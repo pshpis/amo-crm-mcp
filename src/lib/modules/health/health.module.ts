@@ -5,7 +5,7 @@ import { HealthService } from './health.service';
 import { HealthController } from './health.controller';
 
 export class HealthModule<
-  TContext extends BaseServerContext = BaseServerContext
+  TContext extends BaseServerContext = BaseServerContext,
 > extends BaseModule<TContext> {
   constructor() {
     super('health');
@@ -15,7 +15,7 @@ export class HealthModule<
     const service = context.services.getOrCreate(
       HealthService,
       () => new HealthService<TContext>(context)
-    );
+    ) as HealthService<TContext>;
     const controller = context.controllers.getOrCreate(
       HealthController,
       () => new HealthController<TContext>(service, context.logger)

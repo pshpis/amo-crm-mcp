@@ -4,7 +4,7 @@ import {
   UserDetailed,
   ListUsersInput,
   usersListResponseSchema,
-  userDetailedSchema
+  userDetailedSchema,
 } from './amoUsers.schemas';
 
 export class AmoUsersService {
@@ -21,7 +21,7 @@ export class AmoUsersService {
 
     const data = await this.amoService.request({
       path: '/users',
-      query: params
+      query: params,
     });
 
     // AmoCRM returns 204 No Content (empty response) when there are no results
@@ -36,7 +36,7 @@ export class AmoUsersService {
   async getUserById(id: number): Promise<UserDetailed> {
     const data = await this.amoService.request({
       path: `/users/${id}`,
-      query: { with: 'role,group' }
+      query: { with: 'role,group' },
     });
 
     return userDetailedSchema.parse(data);

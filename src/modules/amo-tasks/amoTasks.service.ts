@@ -1,7 +1,6 @@
 import { AmoService } from '../../core/amo';
 import {
   amoTasksApiResponseSchema,
-  singleTaskApiResponseSchema,
   singleTaskMinimalApiResponseSchema,
   taskSchema,
   TasksList,
@@ -11,7 +10,7 @@ import {
   GetTasksByLeadIdInput,
   CreateTaskInput,
   UpdateTaskInput,
-  CompleteTaskInput
+  CompleteTaskInput,
 } from './amoTasks.schemas';
 
 export class AmoTasksService {
@@ -22,8 +21,8 @@ export class AmoTasksService {
       path: '/tasks',
       query: {
         'filter[is_completed]': 0,
-        'order[complete_till]': 'asc'
-      }
+        'order[complete_till]': 'asc',
+      },
     });
 
     // AmoCRM returns 204 No Content (empty response) when there are no results
@@ -37,7 +36,7 @@ export class AmoTasksService {
 
   async getTaskById(input: GetTaskByIdInput): Promise<AmoTask> {
     const data = await this.amoService.request({
-      path: `/tasks/${input.id}`
+      path: `/tasks/${input.id}`,
     });
 
     // AmoCRM returns single entity directly, not wrapped in _embedded
@@ -50,8 +49,8 @@ export class AmoTasksService {
       path: '/tasks',
       query: {
         'filter[entity_id]': input.lead_id,
-        'filter[entity_type]': 'leads'
-      }
+        'filter[entity_type]': 'leads',
+      },
     });
 
     // AmoCRM returns 204 No Content (empty response) when there are no results
@@ -67,7 +66,7 @@ export class AmoTasksService {
     const taskData: Record<string, unknown> = {
       text: input.text,
       responsible_user_id: input.responsible_user_id,
-      complete_till: input.complete_till
+      complete_till: input.complete_till,
     };
 
     if (input.entity_id !== undefined) {
@@ -86,7 +85,7 @@ export class AmoTasksService {
     const data = await this.amoService.request({
       path: '/tasks',
       method: 'POST',
-      body: [taskData]
+      body: [taskData],
     });
 
     // POST operations return minimal data in _embedded format
@@ -96,7 +95,7 @@ export class AmoTasksService {
 
   async updateTask(input: UpdateTaskInput): Promise<TaskMinimal> {
     const taskData: Record<string, unknown> = {
-      id: input.id
+      id: input.id,
     };
 
     if (input.text !== undefined) {
@@ -125,7 +124,7 @@ export class AmoTasksService {
     const data = await this.amoService.request({
       path: '/tasks',
       method: 'PATCH',
-      body: [taskData]
+      body: [taskData],
     });
 
     // PATCH operations return minimal data in _embedded format
@@ -143,10 +142,10 @@ export class AmoTasksService {
           id: input.id,
           is_completed: true,
           result: {
-            text: 'Задача выполнена через MCP'
-          }
-        }
-      ]
+            text: 'Задача выполнена через MCP',
+          },
+        },
+      ],
     });
 
     // PATCH operations return minimal data in _embedded format

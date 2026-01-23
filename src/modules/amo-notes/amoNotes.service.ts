@@ -5,7 +5,7 @@ import {
   AddNoteInput,
   UpdateNoteInput,
   notesListResponseSchema,
-  noteSchema
+  noteSchema,
 } from './amoNotes.schemas';
 
 export class AmoNotesService {
@@ -19,7 +19,7 @@ export class AmoNotesService {
 
     const data = await this.amoService.request({
       path: `/leads/${input.lead_id}/notes`,
-      query: params
+      query: params,
     });
 
     // AmoCRM returns 204 No Content (empty response) when there are no results
@@ -33,18 +33,20 @@ export class AmoNotesService {
 
   async addNote(input: AddNoteInput): Promise<Note> {
     const noteType = input.note_type ?? 'common';
-    
-    const requestBody = [{
-      note_type: noteType,
-      params: {
-        text: input.text
-      }
-    }];
+
+    const requestBody = [
+      {
+        note_type: noteType,
+        params: {
+          text: input.text,
+        },
+      },
+    ];
 
     const data = await this.amoService.request({
       path: `/leads/${input.lead_id}/notes`,
       method: 'POST',
-      body: requestBody
+      body: requestBody,
     });
 
     // AmoCRM returns created notes in _embedded.notes array
@@ -60,24 +62,24 @@ export class AmoNotesService {
     // First, get the existing note to retrieve its note_type
     const existingNoteData = await this.amoService.request({
       path: `/leads/${input.lead_id}/notes/${input.note_id}`,
-      method: 'GET'
+      method: 'GET',
     });
-    
+
     const existingNote = noteSchema.parse(existingNoteData);
-    
+
     // Now update with the note_type included
     const requestBody = {
       id: input.note_id,
       note_type: existingNote.note_type ?? 'common',
       params: {
-        text: input.text
-      }
+        text: input.text,
+      },
     };
 
     const data = await this.amoService.request({
       path: `/leads/${input.lead_id}/notes/${input.note_id}`,
       method: 'PATCH',
-      body: requestBody
+      body: requestBody,
     });
 
     return noteSchema.parse(data);

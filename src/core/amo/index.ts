@@ -7,11 +7,12 @@ export class AmoService {
   readonly limiter: ConcurrencyLimiter;
   private readonly client: AmoHttpClient;
 
-  constructor(private readonly env: EnvConfig, private readonly logger: Logger) {
+  constructor(
+    private readonly env: EnvConfig,
+    private readonly logger: Logger
+  ) {
     this.limiter = new ConcurrencyLimiter(env.AMO_MAX_CONCURRENCY);
-    this.logger.debug(
-      `AmoCRM concurrency limiter initialized with max ${this.limiter.limit}`
-    );
+    this.logger.debug(`AmoCRM concurrency limiter initialized with max ${this.limiter.limit}`);
     this.client = new AmoHttpClient(env, this.limiter, logger);
   }
 

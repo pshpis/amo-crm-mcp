@@ -17,7 +17,7 @@ export class AmoPipelinesController extends BaseController {
     description: 'Возвращает список всех воронок и этапов сделок в AmoCRM.',
     outputSchema: pipelinesResultSchema,
     errorLogMessage: 'Failed to fetch pipelines from AmoCRM',
-    errorLlmMessage: 'Не удалось получить список воронок AmoCRM.'
+    errorLlmMessage: 'Не удалось получить список воронок AmoCRM.',
   })
   private async getPipelines(): Promise<ToolResult<PipelinesResult>> {
     const pipelines = await this.service.getPipelines();
@@ -37,21 +37,16 @@ export class AmoPipelinesController extends BaseController {
     });
 
     const summary =
-      pipelines.length === 0
-        ? 'Воронки не найдены.'
-        : `Найдено воронок: ${pipelines.length}.`;
+      pipelines.length === 0 ? 'Воронки не найдены.' : `Найдено воронок: ${pipelines.length}.`;
 
     return {
       structuredContent: { pipelines },
       content: [
         {
           type: 'text',
-          text:
-            pipelines.length === 0
-              ? summary
-              : `${summary}\nСписок:\n${lines.join('\n')}`
-        }
-      ]
+          text: pipelines.length === 0 ? summary : `${summary}\nСписок:\n${lines.join('\n')}`,
+        },
+      ],
     };
   }
 }

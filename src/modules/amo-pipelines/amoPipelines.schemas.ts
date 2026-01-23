@@ -6,7 +6,7 @@ export const pipelineStatusSchema = z.object({
   color: z.string().optional(),
   sort: z.number().optional(),
   // AmoCRM может отдавать type как строку или числовой код
-  type: z.union([z.string(), z.number()]).optional()
+  type: z.union([z.string(), z.number()]).optional(),
 });
 
 export const pipelineSchema = z.object({
@@ -15,14 +15,14 @@ export const pipelineSchema = z.object({
   is_main: z.boolean().optional(),
   sort: z.number().optional(),
   _embedded: z.object({
-    statuses: z.array(pipelineStatusSchema)
-  })
+    statuses: z.array(pipelineStatusSchema),
+  }),
 });
 
 export const amoPipelinesResponseSchema = z.object({
   _embedded: z.object({
-    pipelines: z.array(pipelineSchema)
-  })
+    pipelines: z.array(pipelineSchema),
+  }),
 });
 
 export const pipelineWithStatusesSchema = z.object({
@@ -30,11 +30,11 @@ export const pipelineWithStatusesSchema = z.object({
   name: z.string(),
   is_main: z.boolean().optional(),
   sort: z.number().optional(),
-  statuses: z.array(pipelineStatusSchema)
+  statuses: z.array(pipelineStatusSchema),
 });
 
 export const pipelinesResultSchema = z.object({
-  pipelines: z.array(pipelineWithStatusesSchema)
+  pipelines: z.array(pipelineWithStatusesSchema),
 });
 
 export type PipelineStatus = z.infer<typeof pipelineStatusSchema>;

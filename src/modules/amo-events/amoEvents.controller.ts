@@ -3,7 +3,7 @@ import {
   Event,
   GetEventsInput,
   eventsListResultSchema,
-  getEventsInputSchema
+  getEventsInputSchema,
 } from './amoEvents.schemas';
 import { Logger } from '../../lib/logger';
 import { BaseController, Tool, ToolResult } from '../../lib/base/baseController';
@@ -27,31 +27,34 @@ export class AmoEventsController extends BaseController {
   private formatEventType(type: string): string {
     // Translate common event types to Russian
     const translations: Record<string, string> = {
-      'lead_added': 'Лид создан',
-      'lead_deleted': 'Лид удалён',
-      'lead_status_changed': 'Изменён статус лида',
-      'lead_linked': 'Лид привязан',
-      'lead_unlinked': 'Лид отвязан',
-      'contact_added': 'Контакт создан',
-      'contact_deleted': 'Контакт удалён',
-      'contact_restored': 'Контакт восстановлен',
-      'task_added': 'Задача создана',
-      'task_completed': 'Задача выполнена',
-      'task_deleted': 'Задача удалена',
-      'task_deadline_changed': 'Изменён срок задачи',
-      'incoming_call': 'Входящий звонок',
-      'outgoing_call': 'Исходящий звонок',
-      'common_note_added': 'Добавлено примечание',
-      'attachment_note_added': 'Добавлен файл',
-      'entity_responsible_changed': 'Изменён ответственный',
-      'custom_field_value_changed': 'Изменено значение поля',
-      'name_field_changed': 'Изменено название'
+      lead_added: 'Лид создан',
+      lead_deleted: 'Лид удалён',
+      lead_status_changed: 'Изменён статус лида',
+      lead_linked: 'Лид привязан',
+      lead_unlinked: 'Лид отвязан',
+      contact_added: 'Контакт создан',
+      contact_deleted: 'Контакт удалён',
+      contact_restored: 'Контакт восстановлен',
+      task_added: 'Задача создана',
+      task_completed: 'Задача выполнена',
+      task_deleted: 'Задача удалена',
+      task_deadline_changed: 'Изменён срок задачи',
+      incoming_call: 'Входящий звонок',
+      outgoing_call: 'Исходящий звонок',
+      common_note_added: 'Добавлено примечание',
+      attachment_note_added: 'Добавлен файл',
+      entity_responsible_changed: 'Изменён ответственный',
+      custom_field_value_changed: 'Изменено значение поля',
+      name_field_changed: 'Изменено название',
     };
-    
-    return translations[type] || type
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+
+    return (
+      translations[type] ||
+      type
+        .split('_')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    );
   }
 
   private formatEventDetails(event: Event): string {
@@ -87,7 +90,7 @@ export class AmoEventsController extends BaseController {
     inputSchema: getEventsInputSchema,
     outputSchema: eventsListResultSchema,
     errorLogMessage: 'Failed to fetch events from AmoCRM',
-    errorLlmMessage: 'Не удалось получить события из AmoCRM.'
+    errorLlmMessage: 'Не удалось получить события из AmoCRM.',
   })
   private async getEvents(input: GetEventsInput): Promise<ToolResult<{ events: Event[] }>> {
     const events = await this.service.getEvents(input);
@@ -121,12 +124,9 @@ export class AmoEventsController extends BaseController {
       content: [
         {
           type: 'text',
-          text:
-            events.length === 0
-              ? summary
-              : `${summary}\n\nСобытия:\n${lines.join('\n')}`
-        }
-      ]
+          text: events.length === 0 ? summary : `${summary}\n\nСобытия:\n${lines.join('\n')}`,
+        },
+      ],
     };
   }
 }

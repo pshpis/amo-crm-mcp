@@ -1,13 +1,14 @@
-import { Event } from '../amoEvents.schemas';
+import { Event, EventValueItem } from '../amoEvents.schemas';
 import { DateFormatter } from '../../../lib/utils/dateFormatter';
+import { safeToString } from '../../../lib/utils/stringUtils';
 
 export class EventDetailsFormatter {
   constructor(private readonly dateFormatter: DateFormatter) {}
 
   format(event: Event): string {
     const parts: string[] = [];
-    const after = event.value_after?.[0];
-    const before = event.value_before?.[0];
+    const after: EventValueItem | undefined = event.value_after?.[0];
+    const before: EventValueItem | undefined = event.value_before?.[0];
 
     if (!after && !before) {
       return '';
@@ -48,8 +49,8 @@ export class EventDetailsFormatter {
 
   private formatLeadStatusChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.lead_status) {
       if (before?.lead_status) {
@@ -66,8 +67,8 @@ export class EventDetailsFormatter {
 
   private formatCustomerStatusChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.customer_status) {
       if (before?.customer_status) {
@@ -82,8 +83,8 @@ export class EventDetailsFormatter {
 
   private formatResponsibleUserChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     const afterResponsibleId = after?.responsible_user?.id ?? after?.responsible_user_id;
     const beforeResponsibleId = before?.responsible_user?.id ?? before?.responsible_user_id;
@@ -100,8 +101,8 @@ export class EventDetailsFormatter {
 
   private formatTagChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.tag) {
       const tagName = after.tag.name ?? `#${after.tag.id}`;
@@ -119,8 +120,8 @@ export class EventDetailsFormatter {
 
   private formatLinkChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.link?.entity) {
       if (before?.link?.entity) {
@@ -137,8 +138,8 @@ export class EventDetailsFormatter {
 
   private formatNoteChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.note) {
       if (before?.note) {
@@ -153,8 +154,8 @@ export class EventDetailsFormatter {
 
   private formatCustomFieldChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.custom_field_value) {
       const fieldId = after.custom_field_value.field_id;
@@ -165,11 +166,15 @@ export class EventDetailsFormatter {
       if (before?.custom_field_value) {
         const beforeValue = before.custom_field_value.value;
         const beforeEnumCode = before.custom_field_value.enum_code;
-        const valueStr = enumCode ?? (value !== undefined ? String(value) : 'изменено');
-        const beforeValueStr = beforeEnumCode ?? (beforeValue !== undefined ? String(beforeValue) : 'было');
+        const valueStr =
+          enumCode ?? (value !== undefined && value !== null ? safeToString(value) : 'изменено');
+        const beforeValueStr =
+          beforeEnumCode ??
+          (beforeValue !== undefined && beforeValue !== null ? safeToString(beforeValue) : 'было');
         parts.push(`поле #${fieldId} (${fieldType}): ${beforeValueStr} → ${valueStr}`);
       } else {
-        const valueStr = enumCode ?? (value !== undefined ? String(value) : 'установлено');
+        const valueStr =
+          enumCode ?? (value !== undefined && value !== null ? safeToString(value) : 'установлено');
         parts.push(`поле #${fieldId} (${fieldType}) → ${valueStr}`);
       }
     } else if (before?.custom_field_value) {
@@ -179,33 +184,33 @@ export class EventDetailsFormatter {
 
   private formatValueChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
-    if (after?.value !== undefined) {
-      const valueStr = typeof after.value === 'object' ? JSON.stringify(after.value) : String(after.value);
-      if (before?.value !== undefined) {
-        const beforeValueStr = typeof before.value === 'object' ? JSON.stringify(before.value) : String(before.value);
+    if (after?.value !== undefined && after.value !== null) {
+      const valueStr = safeToString(after.value);
+      if (before?.value !== undefined && before.value !== null) {
+        const beforeValueStr = safeToString(before.value);
         parts.push(`значение: ${beforeValueStr} → ${valueStr}`);
       } else {
         parts.push(`значение → ${valueStr}`);
       }
-    } else if (before?.value !== undefined) {
-      const beforeValueStr = typeof before.value === 'object' ? JSON.stringify(before.value) : String(before.value);
+    } else if (before?.value !== undefined && before.value !== null) {
+      const beforeValueStr = safeToString(before.value);
       parts.push(`значение: ${beforeValueStr} → удалено`);
     }
   }
 
   private formatTextChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined,
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined,
     event: Event
   ): void {
     if (after?.text !== undefined) {
       if (before?.text !== undefined) {
-        const afterText = after.text || '(пусто)';
-        const beforeText = before.text || '(пусто)';
+        const afterText: string = after.text || '(пусто)';
+        const beforeText: string = before.text || '(пусто)';
         // Для задач показываем более информативно
         if (event.entity_type === 'tasks' || event.type?.includes('task')) {
           parts.push(
@@ -215,17 +220,21 @@ export class EventDetailsFormatter {
           parts.push(`текст: "${beforeText}" → "${afterText}"`);
         }
       } else {
-        const text = after.text || '(пусто)';
+        const text: string = after.text || '(пусто)';
         if (event.entity_type === 'tasks' || event.type?.includes('task')) {
-          parts.push(`текст задачи установлен: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
+          parts.push(
+            `текст задачи установлен: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`
+          );
         } else {
           parts.push(`текст → "${text}"`);
         }
       }
     } else if (before?.text !== undefined) {
-      const text = before.text || '(пусто)';
+      const text: string = before.text || '(пусто)';
       if (event.entity_type === 'tasks' || event.type?.includes('task')) {
-        parts.push(`текст задачи удалён: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`);
+        parts.push(
+          `текст задачи удалён: "${text.substring(0, 50)}${text.length > 50 ? '...' : ''}"`
+        );
       } else {
         parts.push(`текст: "${text}" → удалён`);
       }
@@ -234,8 +243,8 @@ export class EventDetailsFormatter {
 
   private formatNameChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.name !== undefined) {
       if (before?.name !== undefined) {
@@ -250,8 +259,8 @@ export class EventDetailsFormatter {
 
   private formatPriceChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.price !== undefined || after?.sale !== undefined) {
       const price = after.price ?? after.sale;
@@ -269,8 +278,8 @@ export class EventDetailsFormatter {
 
   private formatLtvChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.ltv !== undefined) {
       if (before?.ltv !== undefined) {
@@ -285,8 +294,8 @@ export class EventDetailsFormatter {
 
   private formatTaskDeadlineChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.complete_till !== undefined) {
       if (before?.complete_till !== undefined) {
@@ -303,8 +312,8 @@ export class EventDetailsFormatter {
 
   private formatTaskTypeChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.task_type_id !== undefined) {
       if (before?.task_type_id !== undefined) {
@@ -319,8 +328,8 @@ export class EventDetailsFormatter {
 
   private formatTaskCompletionStatusChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.is_completed !== undefined) {
       if (before?.is_completed !== undefined) {
@@ -341,8 +350,8 @@ export class EventDetailsFormatter {
 
   private formatTaskResultChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.result !== undefined) {
       const resultText = after.result || '(пусто)';
@@ -360,13 +369,15 @@ export class EventDetailsFormatter {
 
   private formatTaskEntityLinkChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.entity_id !== undefined && after?.entity_type !== undefined) {
       if (before?.entity_id !== undefined && before?.entity_type !== undefined) {
         if (before.entity_id !== after.entity_id || before.entity_type !== after.entity_type) {
-          parts.push(`привязка: ${before.entity_type} #${before.entity_id} → ${after.entity_type} #${after.entity_id}`);
+          parts.push(
+            `привязка: ${before.entity_type} #${before.entity_id} → ${after.entity_type} #${after.entity_id}`
+          );
         }
       } else {
         parts.push(`задача привязана к ${after.entity_type} #${after.entity_id}`);
@@ -378,22 +389,22 @@ export class EventDetailsFormatter {
 
   private formatCustomFieldValuesArrayChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.custom_field_values && after.custom_field_values.length > 0) {
       const values = after.custom_field_values
         .map((v) => {
-          const valueStr = v.enum_code ?? (v.value !== undefined ? String(v.value) : '');
-          return valueStr;
+          if (v.enum_code) return v.enum_code;
+          return safeToString(v.value);
         })
         .filter(Boolean)
         .join(', ');
       if (before?.custom_field_values && before.custom_field_values.length > 0) {
         const beforeValues = before.custom_field_values
           .map((v) => {
-            const valueStr = v.enum_code ?? (v.value !== undefined ? String(v.value) : '');
-            return valueStr;
+            if (v.enum_code) return v.enum_code;
+            return safeToString(v.value);
           })
           .filter(Boolean)
           .join(', ');
@@ -404,8 +415,8 @@ export class EventDetailsFormatter {
     } else if (before?.custom_field_values && before.custom_field_values.length > 0) {
       const beforeValues = before.custom_field_values
         .map((v) => {
-          const valueStr = v.enum_code ?? (v.value !== undefined ? String(v.value) : '');
-          return valueStr;
+          if (v.enum_code) return v.enum_code;
+          return safeToString(v.value);
         })
         .filter(Boolean)
         .join(', ');
@@ -415,13 +426,17 @@ export class EventDetailsFormatter {
 
   private formatLeadStatusesArrayChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.leads_statuses && after.leads_statuses.length > 0) {
-      const statuses = after.leads_statuses.map((s) => `${s.id} (воронка: ${s.pipeline_id})`).join(', ');
+      const statuses = after.leads_statuses
+        .map((s) => `${s.id} (воронка: ${s.pipeline_id})`)
+        .join(', ');
       if (before?.leads_statuses && before.leads_statuses.length > 0) {
-        const beforeStatuses = before.leads_statuses.map((s) => `${s.id} (воронка: ${s.pipeline_id})`).join(', ');
+        const beforeStatuses = before.leads_statuses
+          .map((s) => `${s.id} (воронка: ${s.pipeline_id})`)
+          .join(', ');
         parts.push(`статусы лидов: [${beforeStatuses}] → [${statuses}]`);
       } else {
         parts.push(`статусы лидов → [${statuses}]`);
@@ -431,8 +446,8 @@ export class EventDetailsFormatter {
 
   private formatCustomerStatusesArrayChanges(
     parts: string[],
-    before: Event['value_before'][0] | undefined,
-    after: Event['value_after'][0] | undefined
+    before: EventValueItem | undefined,
+    after: EventValueItem | undefined
   ): void {
     if (after?.customers_statuses && after.customers_statuses.length > 0) {
       const statuses = after.customers_statuses

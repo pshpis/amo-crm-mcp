@@ -24,14 +24,7 @@ export class ServerApp extends BaseServerApp<AmoServerContext> {
     const amo = new AmoService(env, logger);
     const services = new SingletonStorage();
     const controllers = new SingletonStorage();
-    const context = new AmoServerContext(
-      config,
-      env,
-      amo,
-      services,
-      controllers,
-      logger
-    );
+    const context = new AmoServerContext(config, env, amo, services, controllers, logger);
     super(modules, context, transport);
   }
 }

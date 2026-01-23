@@ -8,7 +8,7 @@ import {
   noteResultSchema,
   getLeadNotesInputSchema,
   addNoteInputSchema,
-  updateNoteInputSchema
+  updateNoteInputSchema,
 } from './amoNotes.schemas';
 import { Logger } from '../../lib/logger';
 import { BaseController, Tool, ToolResult } from '../../lib/base/baseController';
@@ -41,7 +41,7 @@ export class AmoNotesController extends BaseController {
       `Текст: ${note.params?.text || note.text || 'Без текста'}`,
       `Создал: ${note.created_by ?? 'неизвестно'}`,
       `Создано: ${this.dateFormatter.format(note.created_at)}`,
-      `Обновлено: ${this.dateFormatter.format(note.updated_at)}`
+      `Обновлено: ${this.dateFormatter.format(note.updated_at)}`,
     ];
 
     if (note.params?.phone) {
@@ -60,11 +60,12 @@ export class AmoNotesController extends BaseController {
   @Tool({
     name: 'get_lead_notes',
     title: 'Get notes for a lead from AmoCRM',
-    description: 'Возвращает список записей (комментарии, записи звонков и т.д.) прикреплённых к лиду.',
+    description:
+      'Возвращает список записей (комментарии, записи звонков и т.д.) прикреплённых к лиду.',
     inputSchema: getLeadNotesInputSchema,
     outputSchema: notesListResultSchema,
     errorLogMessage: 'Failed to fetch lead notes from AmoCRM',
-    errorLlmMessage: 'Не удалось получить записи лида из AmoCRM.'
+    errorLlmMessage: 'Не удалось получить записи лида из AmoCRM.',
   })
   private async getLeadNotes(input: GetLeadNotesInput): Promise<ToolResult<{ notes: Note[] }>> {
     const notes = await this.service.getLeadNotes(input);
@@ -80,23 +81,21 @@ export class AmoNotesController extends BaseController {
       content: [
         {
           type: 'text',
-          text:
-            notes.length === 0
-              ? summary
-              : `${summary}\nСписок:\n${lines.join('\n')}`
-        }
-      ]
+          text: notes.length === 0 ? summary : `${summary}\nСписок:\n${lines.join('\n')}`,
+        },
+      ],
     };
   }
 
   @Tool({
     name: 'add_lead_note',
     title: 'Add a note to a lead in AmoCRM',
-    description: 'Создает новую текстовую запись к лиду. Используйте для добавления комментариев или наблюдений о сделке.',
+    description:
+      'Создает новую текстовую запись к лиду. Используйте для добавления комментариев или наблюдений о сделке.',
     inputSchema: addNoteInputSchema,
     outputSchema: noteResultSchema,
     errorLogMessage: 'Failed to add note to lead in AmoCRM',
-    errorLlmMessage: 'Не удалось добавить запись к лиду в AmoCRM.'
+    errorLlmMessage: 'Не удалось добавить запись к лиду в AmoCRM.',
   })
   private async addNote(input: AddNoteInput): Promise<ToolResult<{ note: Note }>> {
     const note = await this.service.addNote(input);
@@ -106,9 +105,9 @@ export class AmoNotesController extends BaseController {
       content: [
         {
           type: 'text',
-          text: `Запись успешно добавлена. ID лида: ${input.lead_id}, ID записи: ${note.id}`
-        }
-      ]
+          text: `Запись успешно добавлена. ID лида: ${input.lead_id}, ID записи: ${note.id}`,
+        },
+      ],
     };
   }
 
@@ -119,7 +118,7 @@ export class AmoNotesController extends BaseController {
     inputSchema: updateNoteInputSchema,
     outputSchema: noteResultSchema,
     errorLogMessage: 'Failed to update note in AmoCRM',
-    errorLlmMessage: 'Не удалось обновить запись в AmoCRM.'
+    errorLlmMessage: 'Не удалось обновить запись в AmoCRM.',
   })
   private async updateNote(input: UpdateNoteInput): Promise<ToolResult<{ note: Note }>> {
     const note = await this.service.updateNote(input);
@@ -129,9 +128,9 @@ export class AmoNotesController extends BaseController {
       content: [
         {
           type: 'text',
-          text: `Запись #${input.note_id} успешно обновлена.`
-        }
-      ]
+          text: `Запись #${input.note_id} успешно обновлена.`,
+        },
+      ],
     };
   }
 }

@@ -23,9 +23,8 @@ export interface LoadServerConfigOptions {
 }
 
 export function loadServerConfig(options?: LoadServerConfigOptions): ServerConfig {
-  const packageJsonPath = options?.packageJsonPath ?? 
-    path.resolve(process.cwd(), 'package.json');
-  
+  const packageJsonPath = options?.packageJsonPath ?? path.resolve(process.cwd(), 'package.json');
+
   const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
     name?: string;
     version?: string;
@@ -35,6 +34,6 @@ export function loadServerConfig(options?: LoadServerConfigOptions): ServerConfi
   return {
     name: packageJson.name ?? options?.defaultName ?? 'mcp-server',
     version: packageJson.version ?? options?.defaultVersion ?? '0.0.0',
-    description: packageJson.description
+    description: packageJson.description,
   };
 }

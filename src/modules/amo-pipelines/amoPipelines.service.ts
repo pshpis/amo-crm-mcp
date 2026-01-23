@@ -2,7 +2,7 @@ import { AmoService } from '../../core/amo';
 import {
   amoPipelinesResponseSchema,
   PipelineWithStatuses,
-  pipelineWithStatusesSchema
+  pipelineWithStatusesSchema,
 } from './amoPipelines.schemas';
 
 export class AmoPipelinesService {
@@ -10,7 +10,7 @@ export class AmoPipelinesService {
 
   async getPipelines(): Promise<PipelineWithStatuses[]> {
     const data = await this.amoService.request({
-      path: '/leads/pipelines'
+      path: '/leads/pipelines',
     });
 
     // AmoCRM returns 204 No Content (empty response) when there are no results
@@ -26,7 +26,7 @@ export class AmoPipelinesService {
         name: pipeline.name,
         is_main: pipeline.is_main,
         sort: pipeline.sort,
-        statuses: pipeline._embedded.statuses
+        statuses: pipeline._embedded.statuses,
       })
     );
 

@@ -12,9 +12,9 @@ export interface ControllerWithTools {
   getTools(): ToolDescriptor[];
 }
 
-export abstract class BaseModule<TContext extends BaseServerContext = BaseServerContext>
-  implements ServerModule<TContext>
-{
+export abstract class BaseModule<
+  TContext extends BaseServerContext = BaseServerContext,
+> implements ServerModule<TContext> {
   constructor(public readonly name: string) {}
 
   protected registerTools(server: McpServer, controller: ControllerWithTools) {
@@ -25,7 +25,7 @@ export abstract class BaseModule<TContext extends BaseServerContext = BaseServer
           title: tool.title,
           description: tool.description,
           inputSchema: tool.inputSchema,
-          outputSchema: tool.outputSchema
+          outputSchema: tool.outputSchema,
         },
         tool.handler as ToolCallback
       );

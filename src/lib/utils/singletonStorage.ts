@@ -1,3 +1,6 @@
+// Using any[] is necessary here because different constructors have different parameter types
+// This is a common pattern for dependency injection containers
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type InstanceConstructor<T> = new (...args: any[]) => T;
 
 export interface SingletonStorageOptions {
@@ -23,7 +26,7 @@ export class SingletonStorage<T = unknown> {
       if (this.options.strictMode && existing !== instance) {
         throw new Error(
           `Instance for ${ctor.name} is already registered. ` +
-          `Use get() or getOrCreate() instead, or enable non-strict mode.`
+            `Use get() or getOrCreate() instead, or enable non-strict mode.`
         );
       }
       return existing as C;

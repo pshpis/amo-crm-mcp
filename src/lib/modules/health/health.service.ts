@@ -18,32 +18,30 @@ export class HealthService<TContext extends BaseServerContext = BaseServerContex
         version: this.context.config.version,
         description: this.context.config.description,
         uptimeSeconds: this.context.getUptimeSeconds(),
-        startedAt: this.context.startedAt.toISOString()
+        startedAt: this.context.startedAt.toISOString(),
       },
       environment: {
         nodeVersion: process.version,
         platform: `${process.platform}-${process.arch}`,
         pid: process.pid,
-        cwd: process.cwd()
+        cwd: process.cwd(),
       },
       resources: {
         memory: {
           rssBytes: memoryUsage.rss,
           heapUsedBytes: memoryUsage.heapUsed,
           heapTotalBytes: memoryUsage.heapTotal,
-          externalBytes: memoryUsage.external ?? 0
+          externalBytes: memoryUsage.external ?? 0,
         },
         cpuCount: os.cpus().length,
-        loadAverage: [load[0], load[1], load[2]]
-      }
+        loadAverage: [load[0], load[1], load[2]],
+      },
     };
   }
 
   formatSnapshot(snapshot: HealthSnapshot): string {
     const memory = snapshot.resources.memory;
-    const load = snapshot.resources.loadAverage
-      .map((value: number) => value.toFixed(2))
-      .join('/');
+    const load = snapshot.resources.loadAverage.map((value: number) => value.toFixed(2)).join('/');
 
     return [
       `${snapshot.server.name}@${snapshot.server.version} работает нормально`,
@@ -51,7 +49,7 @@ export class HealthService<TContext extends BaseServerContext = BaseServerContex
       `Память: rss ${this.formatBytes(memory.rssBytes)}, heap ${this.formatBytes(memory.heapUsedBytes)}`,
       `Нагрузка (1м/5м/15м): ${load}`,
       `PID: ${snapshot.environment.pid} | Node: ${snapshot.environment.nodeVersion}`,
-      `Метка времени: ${snapshot.timestamp}`
+      `Метка времени: ${snapshot.timestamp}`,
     ].join('\n');
   }
 

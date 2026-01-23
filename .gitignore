@@ -6,4 +6,3 @@ npm-debug.log*
 .env.local
 .env.*.local
 *.log
-mcp.log

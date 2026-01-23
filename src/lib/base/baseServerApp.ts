@@ -10,6 +10,10 @@ export class BaseServerApp<TContext extends BaseServerContext> {
   protected readonly transport: Transport;
   private shuttingDown = false;
   private readonly boundShutdown: () => Promise<void>;
+  private readonly signalHandlers: {
+    sigint: () => void;
+    sigterm: () => void;
+  };
 
   constructor(
     protected readonly modules: ServerModule<TContext>[],
@@ -19,16 +23,24 @@ export class BaseServerApp<TContext extends BaseServerContext> {
     this.transport = transport ?? new StdioServerTransport();
     this.server = this.createServer();
     this.boundShutdown = this.shutdown.bind(this);
+    this.signalHandlers = {
+      sigint: () => {
+        void this.boundShutdown();
+      },
+      sigterm: () => {
+        void this.boundShutdown();
+      },
+    };
   }
 
   private createServer(): McpServer {
     const server = new McpServer(
       {
         name: this.context.config.name,
-        version: this.context.config.version
+        version: this.context.config.version,
       },
       {
-        instructions: this.context.config.description
+        instructions: this.context.config.description,
       }
     );
 
@@ -51,12 +63,12 @@ export class BaseServerApp<TContext extends BaseServerContext> {
     this.shuttingDown = true;
     this.context.logger.info('Shutting down MCP server...');
     this.removeSignalHandlers();
-    
+
     // Flush logger if it has flush method (e.g., FileLogger)
     if ('flush' in this.context.logger && typeof this.context.logger.flush === 'function') {
       await (this.context.logger.flush as () => Promise<void>)();
     }
-    
+
     await this.server.close();
   }
 
@@ -66,12 +78,12 @@ export class BaseServerApp<TContext extends BaseServerContext> {
   }
 
   private registerSignalHandlers(): void {
-    process.on('SIGINT', this.boundShutdown);
-    process.on('SIGTERM', this.boundShutdown);
+    process.on('SIGINT', this.signalHandlers.sigint);
+    process.on('SIGTERM', this.signalHandlers.sigterm);
   }
 
   private removeSignalHandlers(): void {
-    process.off('SIGINT', this.boundShutdown);
-    process.off('SIGTERM', this.boundShutdown);
+    process.off('SIGINT', this.signalHandlers.sigint);
+    process.off('SIGTERM', this.signalHandlers.sigterm);
   }
 }

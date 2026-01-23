@@ -15,5 +15,5 @@ export const modules: ServerModule<AmoServerContext>[] = [
   new AmoLeadsModule(),
   new AmoUsersModule(),
   new AmoNotesModule(),
-  new AmoEventsModule()
+  new AmoEventsModule(),
 ];

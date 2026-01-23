@@ -11,7 +11,7 @@ export const levelWeight: Record<LogLevel, number> = {
   debug: 10,
   info: 20,
   warn: 30,
-  error: 40
+  error: 40,
 };
 
 export const normalizeLevel = (level?: string | null): LogLevel => {

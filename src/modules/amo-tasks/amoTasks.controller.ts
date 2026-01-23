@@ -21,7 +21,7 @@ import {
   TasksByLeadResult,
   CreateTaskResult,
   UpdateTaskResult,
-  CompleteTaskResult
+  CompleteTaskResult,
 } from './amoTasks.schemas';
 import { Logger } from '../../lib/logger/index';
 import { BaseController, Tool, ToolResult } from '../../lib/base/baseController';
@@ -46,7 +46,7 @@ export class AmoTasksController extends BaseController {
 
     const taskTypes: Record<number, string> = {
       1: 'Звонок',
-      2: 'Встреча'
+      2: 'Встреча',
     };
 
     return taskTypes[taskTypeId] || `тип ${taskTypeId}`;
@@ -58,7 +58,7 @@ export class AmoTasksController extends BaseController {
     description: 'Возвращает список невыполненных задач из AmoCRM.',
     outputSchema: tasksListResultSchema,
     errorLogMessage: 'Failed to fetch active tasks from AmoCRM',
-    errorLlmMessage: 'Не удалось получить список задач из AmoCRM.'
+    errorLlmMessage: 'Не удалось получить список задач из AmoCRM.',
   })
   private async getActiveTasks(): Promise<ToolResult<{ tasks: TasksList }>> {
     const tasks = await this.service.getActiveTasks();
@@ -77,21 +77,16 @@ export class AmoTasksController extends BaseController {
     });
 
     const summary =
-      tasks.length === 0
-        ? 'Активных задач нет.'
-        : `Найдено активных задач: ${tasks.length}.`;
+      tasks.length === 0 ? 'Активных задач нет.' : `Найдено активных задач: ${tasks.length}.`;
 
     return {
       structuredContent: { tasks },
       content: [
         {
           type: 'text',
-          text:
-            tasks.length === 0
-              ? summary
-              : `${summary}\nСписок:\n${lines.join('\n')}`
-        }
-      ]
+          text: tasks.length === 0 ? summary : `${summary}\nСписок:\n${lines.join('\n')}`,
+        },
+      ],
     };
   }
 
@@ -102,11 +97,9 @@ export class AmoTasksController extends BaseController {
     inputSchema: getTaskByIdInputSchema,
     outputSchema: singleTaskResultSchema,
     errorLogMessage: 'Failed to fetch task by id from AmoCRM',
-    errorLlmMessage: 'Не удалось получить задачу по указанному ID.'
+    errorLlmMessage: 'Не удалось получить задачу по указанному ID.',
   })
-  private async getTaskById(
-    input: GetTaskByIdInput
-  ): Promise<ToolResult<SingleTaskResult>> {
+  private async getTaskById(input: GetTaskByIdInput): Promise<ToolResult<SingleTaskResult>> {
     const task = await this.service.getTaskById(input);
 
     const title = task.text?.trim() || 'без названия';
@@ -122,9 +115,7 @@ export class AmoTasksController extends BaseController {
     const responsible = task.responsible_user_id
       ? `ответственный: ${task.responsible_user_id}`
       : 'ответственный не указан';
-    const created = task.created_at
-      ? `создана: ${this.dateFormatter.format(task.created_at)}`
-      : '';
+    const created = task.created_at ? `создана: ${this.dateFormatter.format(task.created_at)}` : '';
     const updated = task.updated_at
       ? `обновлена: ${this.dateFormatter.format(task.updated_at)}`
       : '';
@@ -138,7 +129,7 @@ export class AmoTasksController extends BaseController {
       `Привязка: ${link}`,
       responsible,
       created,
-      updated
+      updated,
     ]
       .filter(Boolean)
       .join('\n');
@@ -148,9 +139,9 @@ export class AmoTasksController extends BaseController {
       content: [
         {
           type: 'text',
-          text
-        }
-      ]
+          text,
+        },
+      ],
     };
   }
 
@@ -161,7 +152,7 @@ export class AmoTasksController extends BaseController {
     inputSchema: getTasksByLeadIdInputSchema,
     outputSchema: tasksByLeadResultSchema,
     errorLogMessage: 'Failed to fetch tasks by lead id from AmoCRM',
-    errorLlmMessage: 'Не удалось получить задачи по указанному лиду.'
+    errorLlmMessage: 'Не удалось получить задачи по указанному лиду.',
   })
   private async getTasksByLeadId(
     input: GetTasksByLeadIdInput
@@ -186,12 +177,9 @@ export class AmoTasksController extends BaseController {
       content: [
         {
           type: 'text',
-          text:
-            tasks.length === 0
-              ? summary
-              : `${summary}\nСписок:\n${lines.join('\n')}`
-        }
-      ]
+          text: tasks.length === 0 ? summary : `${summary}\nСписок:\n${lines.join('\n')}`,
+        },
+      ],
     };
   }
 
@@ -202,27 +190,22 @@ export class AmoTasksController extends BaseController {
     inputSchema: createTaskInputSchema,
     outputSchema: createTaskResultSchema,
     errorLogMessage: 'Failed to create task in AmoCRM',
-    errorLlmMessage: 'Не удалось создать задачу в AmoCRM.'
+    errorLlmMessage: 'Не удалось создать задачу в AmoCRM.',
   })
-  private async createTask(
-    input: CreateTaskInput
-  ): Promise<ToolResult<CreateTaskResult>> {
+  private async createTask(input: CreateTaskInput): Promise<ToolResult<CreateTaskResult>> {
     const task = await this.service.createTask(input);
 
     // Use only data that AmoCRM actually returns (usually just id)
-    const text = [
-      `Задача успешно создана.`,
-      `ID: #${task.id}`
-    ].join('\n');
+    const text = [`Задача успешно создана.`, `ID: #${task.id}`].join('\n');
 
     return {
       structuredContent: { task },
       content: [
         {
           type: 'text',
-          text
-        }
-      ]
+          text,
+        },
+      ],
     };
   }
 
@@ -233,27 +216,22 @@ export class AmoTasksController extends BaseController {
     inputSchema: updateTaskInputSchema,
     outputSchema: updateTaskResultSchema,
     errorLogMessage: 'Failed to update task in AmoCRM',
-    errorLlmMessage: 'Не удалось обновить задачу в AmoCRM.'
+    errorLlmMessage: 'Не удалось обновить задачу в AmoCRM.',
   })
-  private async updateTask(
-    input: UpdateTaskInput
-  ): Promise<ToolResult<UpdateTaskResult>> {
+  private async updateTask(input: UpdateTaskInput): Promise<ToolResult<UpdateTaskResult>> {
     const task = await this.service.updateTask(input);
 
     // Use only data that AmoCRM actually returns (usually just id)
-    const text = [
-      `Задача успешно обновлена.`,
-      `ID: #${task.id}`
-    ].join('\n');
+    const text = [`Задача успешно обновлена.`, `ID: #${task.id}`].join('\n');
 
     return {
       structuredContent: { task },
       content: [
         {
           type: 'text',
-          text
-        }
-      ]
+          text,
+        },
+      ],
     };
   }
 
@@ -264,27 +242,22 @@ export class AmoTasksController extends BaseController {
     inputSchema: completeTaskInputSchema,
     outputSchema: completeTaskResultSchema,
     errorLogMessage: 'Failed to complete task in AmoCRM',
-    errorLlmMessage: 'Не удалось выполнить задачу в AmoCRM.'
+    errorLlmMessage: 'Не удалось выполнить задачу в AmoCRM.',
   })
-  private async completeTask(
-    input: CompleteTaskInput
-  ): Promise<ToolResult<CompleteTaskResult>> {
+  private async completeTask(input: CompleteTaskInput): Promise<ToolResult<CompleteTaskResult>> {
     const task = await this.service.completeTask(input);
 
     // Use only data that AmoCRM actually returns (usually just id)
-    const text = [
-      `Задача успешно выполнена.`,
-      `ID: #${task.id}`
-    ].join('\n');
+    const text = [`Задача успешно выполнена.`, `ID: #${task.id}`].join('\n');
 
     return {
       structuredContent: { task },
       content: [
         {
           type: 'text',
-          text
-        }
-      ]
+          text,
+        },
+      ],
     };
   }
 }

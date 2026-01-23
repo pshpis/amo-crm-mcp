@@ -2,7 +2,6 @@ import { AmoService } from '../../core/amo';
 import {
   LeadsListResult,
   leadsListResponseSchema,
-  Lead,
   ListLeadsInput,
   SingleLeadInput,
   UpdateLeadInput,
@@ -11,7 +10,7 @@ import {
   contactSchema,
   Contact,
   LeadMinimal,
-  singleLeadMinimalApiResponseSchema
+  singleLeadMinimalApiResponseSchema,
 } from './amoLeads.schemas';
 import { amoTasksApiResponseSchema } from '../amo-tasks/amoTasks.schemas';
 
@@ -50,7 +49,7 @@ export class AmoLeadsService {
 
     const data = await this.amoService.request({
       path: '/leads',
-      query: params
+      query: params,
     });
 
     // AmoCRM returns 204 No Content (empty response) when there are no results
@@ -66,7 +65,7 @@ export class AmoLeadsService {
     // Запрашиваем лид с контактами через параметр with для получения ID контактов
     const data = await this.amoService.request({
       path: `/leads/${input.id}`,
-      query: { with: 'contacts' }
+      query: { with: 'contacts' },
     });
 
     const lead = leadSchema.parse(data);
@@ -78,9 +77,14 @@ export class AmoLeadsService {
     if (embedded?.contacts && Array.isArray(embedded.contacts)) {
       for (const contactLink of embedded.contacts) {
         if (typeof contactLink === 'object' && contactLink !== null && 'id' in contactLink) {
-          const id = typeof contactLink.id === 'number' ? contactLink.id : Number(contactLink.id);
-          if (!isNaN(id)) {
-            contactIds.push(id);
+          const contactId = (contactLink as { id: unknown }).id;
+          if (typeof contactId === 'number') {
+            contactIds.push(contactId);
+          } else if (typeof contactId === 'string') {
+            const parsedId = Number.parseInt(contactId, 10);
+            if (!Number.isNaN(parsedId)) {
+              contactIds.push(parsedId);
+            }
           }
         }
       }
@@ -100,11 +104,14 @@ export class AmoLeadsService {
 
         const contactsData = await this.amoService.request({
           path: '/contacts',
-          query: queryParams
+          query: queryParams,
         });
 
         const contactsResponse = contactsData as { _embedded?: { contacts?: unknown[] } };
-        if (contactsResponse._embedded?.contacts && Array.isArray(contactsResponse._embedded.contacts)) {
+        if (
+          contactsResponse._embedded?.contacts &&
+          Array.isArray(contactsResponse._embedded.contacts)
+        ) {
           contacts = contactsResponse._embedded.contacts
             .map((c) => {
               const parsed = contactSchema.safeParse(c);
@@ -127,8 +134,8 @@ export class AmoLeadsService {
           'filter[entity_type]': 'leads',
           'filter[is_completed]': 0,
           'order[complete_till]': 'asc',
-          limit: 1
-        }
+          limit: 1,
+        },
       });
       const parsedTasks = amoTasksApiResponseSchema.safeParse(tasksData);
       if (parsedTasks.success) {
@@ -143,7 +150,7 @@ export class AmoLeadsService {
 
   async updateLead(input: UpdateLeadInput): Promise<LeadMinimal> {
     const leadData: Record<string, unknown> = {
-      id: input.id
+      id: input.id,
     };
 
     if (input.name !== undefined) {
@@ -160,7 +167,7 @@ export class AmoLeadsService {
     const data = await this.amoService.request({
       path: '/leads',
       method: 'PATCH',
-      body: [leadData]
+      body: [leadData],
     });
 
     // PATCH operations return minimal data in _embedded format
